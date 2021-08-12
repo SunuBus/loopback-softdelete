@@ -56,4 +56,15 @@ module.exports = function (Model, options) {
         }
         next();
     });
+
+    Model.afterRemote("deleteById", (ctx, modelInstance, next) => {
+      Model.updateAll(
+        { id: ctx.args.id, isDeleted: true, deletedBy: {exists: false} },
+        { deletedBy: ctx.req.currentUser || ctx.req.user }
+      )
+        .then(() => {
+          next(null);
+        })
+        .catch((err) => next(err));
+    });
 };
